@@ -27,8 +27,7 @@ namespace MillionBoxes
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //string connection = @"Data Source=tcp:millionboxes20190123043113dbserver.database.windows.net,1433;Initial Catalog=MillionBoxesDb;User Id=dbuser@millionboxes20190123043113dbserver;Password=DataBasePass123";
-            string connection = @"Data Source=localhost;Initial Catalog=u0641375_boxes;User Id=u0641375_user;Password=ynhj314Z";
+            string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<BoxesContext>(options => options.UseSqlServer(connection));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
