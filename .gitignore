@@ -32,7 +32,7 @@ bld/
 [Bb]uild[Ll]og.*
 
 #applicationsettings
-#*appsettings.json
+*appsettings.json
 
 # NUNIT
 *.VisualState.xml
