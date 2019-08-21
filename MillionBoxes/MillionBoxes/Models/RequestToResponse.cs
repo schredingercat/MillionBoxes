@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using AliceApi;
 
 namespace MillionBoxes.Models
@@ -39,12 +40,12 @@ namespace MillionBoxes.Models
                 case RequestModes.OpenBox:
                     EntitiesConvertExtension.TryParseInt(aliceRequest.request, out var number);
                     dataBase.SetOpenedBoxNumber(user.UserId, number);
-                    var message = dataBase.ReadFromBox(number);
+                    var message = Regex.Replace(dataBase.ReadFromBox(number), @"\t|\n|\r", string.Empty);
                     return message.Length == 0 ? GetRandomString(TextResources.BoxIsEmpty)
                                                : $"{GetRandomString(TextResources.MessageInTheBox)}. {message}";
 
                 case RequestModes.Repeat:
-                    message = dataBase.ReadFromBox(user.OpenedBox);
+                    message = Regex.Replace(dataBase.ReadFromBox(user.OpenedBox), @"\t|\n|\r", string.Empty);
                     return message.Length == 0 ? $"{TextResources.Repeat} {GetRandomString(TextResources.BoxIsEmpty)}"
                                                : $"{TextResources.Repeat} {GetRandomString(TextResources.MessageInTheBox)}. {message}";
 
@@ -53,12 +54,19 @@ namespace MillionBoxes.Models
                     return GetRandomString(TextResources.SaveToBox);
 
                 case RequestModes.Dictate:
-                    dataBase.SaveToBox(user.OpenedBox, aliceRequest.request.original_utterance);
+                    var maxLength = 300;
+
+                    message = Regex.Replace(
+                        aliceRequest.request.original_utterance.Length <= maxLength
+                            ? aliceRequest.request.original_utterance
+                            : aliceRequest.request.original_utterance.Substring(0, maxLength), @"\t|\n|\r", string.Empty);
+
+                    dataBase.SaveToBox(user.OpenedBox, message);
                     dataBase.SetUserSaveMode(user.UserId, false);
                     return $"{GetRandomString(TextResources.MessageSaved)} {user.OpenedBox}";
 
                 case RequestModes.Read:
-                    message = dataBase.ReadFromBox(user.OpenedBox);
+                    message = Regex.Replace(dataBase.ReadFromBox(user.OpenedBox), @"\t|\n|\r", string.Empty);
                     return message.Length == 0 ? GetRandomString(TextResources.BoxIsEmpty)
                                                : $"{GetRandomString(TextResources.MessageInTheBox)}. {message}";
 
@@ -84,7 +92,7 @@ namespace MillionBoxes.Models
 
         private static RequestModes GetRequestMode(AliceRequest aliceRequest, User user)
         {
-            var command = aliceRequest.request.command.ToLower();
+            var command = Regex.Replace(aliceRequest.request.command.ToLower(), @"\t|\n|\r", string.Empty);
 
             if (aliceRequest.session.New)
             {
